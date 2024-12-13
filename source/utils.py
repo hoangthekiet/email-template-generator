@@ -2,21 +2,26 @@ import colorsys
 import numpy as np
 
 
-def fix_url(url):
+def resolve_url(url: str) -> str:
+    """
+    Ensures that the given URL starts with 'http' or 'https'.
+    """
     if url.startswith('http'):
         return url
-    else:
-        return 'https://' + url
-
-def get_brandname(url):
-    brand_name = (url.split('.')[-2] if url.split('.')[-2] not in {'com', 'net'}
-                  else url.split('.')[-3]).title()
-    if '/' in brand_name:
-        brand_name = brand_name.split('/')[-1] if brand_name.split('/')[-1] not in {'co', 'com', 'net', 'gov'} \
-                     else brand_name.split('/')[-2]
-    return brand_name
+    return 'https://' + url
 
 def my_literal_eval_hsl(hsl: str) -> tuple[int, float, float]:
+    """
+    Parses a string representing an HSL color value and converts it into a tuple.
+
+    Parameters
+    ----------
+    hsl: A string in the format "H,S%,L%"
+
+    Returns
+    -------
+    A tuple containing three HSL values
+    """
     h, s, l = tuple(hsl.split(','))
     h = int(h)
     s = float(s.rstrip('%'))
@@ -70,4 +75,7 @@ def hex_to_array(hex: str) -> np.ndarray:
     return np.array([float(h) / 360.0, s / 100.0, l / 100.0])
 
 def hex_to_visual(hex: str) -> str:
+    """
+    Returns a URL pointing to a 100x100 pixel image filled with the given color.
+    """
     return f"https://placehold.co/100x100/{hex.lstrip('#')}/{hex.lstrip('#')}.png"

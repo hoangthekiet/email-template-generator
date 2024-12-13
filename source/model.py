@@ -5,10 +5,18 @@ from torch.utils.data import DataLoader
 
 class ColorModel(nn.Module):
     """
-    Simple multi-layer perceptron with 2 layers.
-    Batch-norm is applied to correlate the data points within the same batch.
-    Model input dim = 4 (hue, saturation, lightness, frequency)
-    Model output dim = 5 (backdrop, canvas, font, link, accent)
+    Simple Multi-layer Perceptron with 2 fully connected layers.
+    Batch-norm is applied to correlate the data points within each batch.
+
+    Input
+    -----
+    - Dim = 4
+    - Features: hue, saturation, lightness, frequency
+
+    Output
+    ------
+    - Dim = 5
+    - Features: backdrop, canvas, font, link, accent
     """
     def __init__(self, hidden_size: int = 8):
         super(ColorModel, self).__init__()
@@ -25,10 +33,14 @@ class ColorModel(nn.Module):
 
 
 def train(dataloader: DataLoader, lr: float = 0.003, num_epochs: int = 1000) -> ColorModel:
+    from torch.utils.tensorboard import SummaryWriter
+    
     # Init model, define loss function and optimizer
     model = ColorModel()
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+    writer = SummaryWriter()
 
     # Training loop
     for epoch in range(num_epochs):
@@ -41,6 +53,10 @@ def train(dataloader: DataLoader, lr: float = 0.003, num_epochs: int = 1000) -> 
             loss.backward()
             optimizer.step()
 
-        print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {sum_loss:.4f}')
+        writer.add_scalars("Loss", sum_loss, epoch)
+        print(f'Epoch #[{epoch+1}/{num_epochs}], Loss: {sum_loss:.4f}')    
+    
+    writer.flush()
+    writer.close()
     
     return model
