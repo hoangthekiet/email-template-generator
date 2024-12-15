@@ -4,21 +4,21 @@ from tqdm import tqdm
 
 from dotenv import load_dotenv
 
-from source.color_extractor import StyleExtractor
-from source.writting_agent import WritingAgent
+from src.color_detector import StyleDetector
+from src.writting_agent import WritingAgent
 
 
 load_dotenv()
 
-# Get website for color profile extraction
+# Get website for color scheme extraction
 print("What is your website?")
 url = input()
 
-# Extract color profile
-style_extractor = StyleExtractor(url)
-extracted_style = style_extractor.get_color_profile()
-print("--\nExtracted color profile:")
-pprint(extracted_style)
+# Extract color scheme
+style_detector = StyleDetector(url)
+detected_style = style_detector.get_color_scheme()
+print("--\nDetected color scheme:")
+pprint(detected_style)
 
 print('\n***\n')
 
@@ -44,6 +44,6 @@ final_state = writing_agent.run(essays=essays,
                                 num_words=num_words,
                                 config={"configurable": {"thread_id": 42}})
 
-result = final_state['messages'][-1].content
+result = final_state['messages'][-1].object
 print('--\nGenerated email:')
-print(result)
+pprint(result)

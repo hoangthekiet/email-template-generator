@@ -1,4 +1,6 @@
 import colorsys
+from urllib.parse import urljoin
+
 import numpy as np
 
 
@@ -8,7 +10,14 @@ def resolve_url(url: str) -> str:
     """
     if url.startswith('http'):
         return url
-    return 'https://' + url
+    return urljoin('https://', url)
+
+def css_url(url: str, css_file: str) -> str:
+    if css_file.startswith('//'):
+        return urljoin('https://', css_file)
+    elif not css_file.startswith('http'):
+        return urljoin(url, css_file)
+    return css_file
 
 def my_literal_eval_hsl(hsl: str) -> tuple[int, float, float]:
     """

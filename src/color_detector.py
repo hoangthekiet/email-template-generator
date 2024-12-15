@@ -1,4 +1,5 @@
 import ast
+import os
 import re
 from typing import Dict, List, Tuple
 
@@ -10,15 +11,15 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 from .model import ColorModel
-from .utils import resolve_url, my_literal_eval_hsl, hsl_to_hex, rgb_to_hex, rgb_to_hsl, hex_to_rgb, hex_to_array
+from .utils import resolve_url, css_url, my_literal_eval_hsl, hsl_to_hex, rgb_to_hex, rgb_to_hsl, hex_to_rgb, hex_to_array
 
 
-class StyleExtractor:
+class StyleDetector:
     """
-    A class representing a hybrid method for extracting the style of a website.
+    A class representing a hybrid method for detecting the style of a website.
     """
 
-    MODEL_DIR = "checkpoints/cp_485_1212_1.pt"
+    MODEL_DIR = os.getenv('MODEL_DIR', "checkpoints/cp_485_1212_1.pt")
 
     def __init__(self, url: str):
         """
@@ -46,10 +47,7 @@ class StyleExtractor:
         -------
         CSS content
         """
-        if css_file.startswith('//'):
-            css_file = 'https:' + css_file
-        elif not css_file.startswith('http'):
-            css_file = self.url + css_file
+        css_url(self.url, css_file)
         # Get content
         try:
             css_content = requests.get(css_file).text
@@ -61,7 +59,7 @@ class StyleExtractor:
 
     def get_colors_showit(self) -> Dict[str, str]:
         """
-        Get color profile from website built on ShowIt.
+        Get color scheme from website built on ShowIt.
         e.g. https://www.hannahschneiderwellness.com/
         
         Returns
@@ -99,7 +97,7 @@ class StyleExtractor:
 
     def get_colors_squarespace(self) -> Dict[str, str]:
         """
-        Get color profile from website built on SquareSpace.
+        Get color scheme from website built on SquareSpace.
         e.g. https://www.hannahschneiderwellness.com/
 
         Returns
@@ -233,9 +231,9 @@ class StyleExtractor:
         return color_counts
     
 
-    def predict_profile(self, color_counts, min_colors=5, max_colors=20) -> Dict[str, str]:        
+    def predict_scheme(self, color_counts, min_colors=5, max_colors=20) -> Dict[str, str]:        
         """
-        Predict a color profile given a list of hexadecimal color codes and their counts,
+        Predict a color scheme given a list of hexadecimal color codes and their counts,
         using a Multi-layer Perceptron model.
         
         Parameters
@@ -247,7 +245,7 @@ class StyleExtractor:
         
         Returns
         -------
-        A dictionary containing the predicted color profile, with keys representing color names.
+        A dictionary containing the predicted color scheme, with keys representing color names.
             If less than `min_colors` colors are given, an empty dictionary is returned.
         """
         if self.model is None:
@@ -274,25 +272,25 @@ class StyleExtractor:
         return {}
 
 
-    def get_color_profile(self) -> Dict[str, str]:
+    def get_color_scheme(self) -> Dict[str, str]:
         """
-        Get a color profile for the given URL.
+        Get a color scheme for the given URL.
         
         First, it checks if the website is built on web builders (e.g. ShowIt or Squarespace),
-        and if so, it uses their predefined methods to extract the color profile.
+        and if so, it uses their predefined methods to extract the color scheme.
         If not, it extracts all colors from the website, counts their appearances,
-        and then uses an AI model to predict the color profile.
+        and then uses an AI model to predict the color scheme.
         
         Returns
         -------
-        A dictionary containing the color profile, with keys representing color names.
-            If no color profile can be extracted or predicted, an empty dictionary is returned.
+        A dictionary containing the color scheme, with keys representing color names.
+            If no color scheme can be extracted or predicted, an empty dictionary is returned.
         """
         extracted_colors = (self.get_colors_showit() or
                             self.get_colors_squarespace())
         if not extracted_colors:
-            # Predict color profile with model
+            # Predict color scheme with model
             all_colors = self.get_all_colors()
             color_counts = self.get_color_counts(all_colors)
-            extracted_colors = self.predict_profile(color_counts)
+            extracted_colors = self.predict_scheme(color_counts)
         return extracted_colors

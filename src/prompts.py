@@ -43,16 +43,19 @@ Please maintain the email's sender and receiver names if specified.
 
 Avoid repetitive use of the topic name; employ synonyms or related terms where appropriate.
 
-A marketing email should include the following sections:
+A marketing email should include the following elements:
 
 - Subject line
-- Tag line or slogan (optional)
+- Preheader/Snippet
+- Tagline/Slogan
 - Engaging description of the product/service
 - Clear and compelling call to action
-- Writer's signature
+- Call to action button of at most 3 words
+- Footer
+- Sign-offs
 
 Here is the topic for you to write:
 
 {topic}
 
-**Just directly provide the email content without any additional formatting or explanations.**"""
+You will provide the email as a JSON object with the following keys: `subject`, `preheader`, `tagline`, `description`, `call_to_action`, `button`, `footer`, `sign_offs`."""

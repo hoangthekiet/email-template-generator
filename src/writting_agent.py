@@ -2,7 +2,7 @@ import re
 from typing import List, Literal, Tuple
 
 import requests
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_groq import ChatGroq
 from langgraph.graph import END, START, MessagesState, StateGraph
 from readability import Document
@@ -29,7 +29,8 @@ class WritingAgent():
         # Style learning agent use very low temperature to ensure consistency
         self.llm_style_learner = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.05)
         # Email writing agent use higher temperature to allow creativity yet avoid hallucinations
-        self.llm_email_writer = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.3)
+        self.llm_email_writer = ChatGroq(model="llama-3.3-70b-versatile",
+                                         temperature=0.3).with_structured_output(dict, method="json_mode")
         # Whether to print verbose messages
         self.verbose = verbose
 
@@ -40,7 +41,7 @@ class WritingAgent():
 
             Returns
             -------
-            Returns "agent_style_learner" , otherwise "agent_email_writer".
+            Returns "agent_style_learner", otherwise "agent_email_writer".
             """
             system_message = state['messages'][0]
             # If there are essays to analyze, continue learning
@@ -80,7 +81,8 @@ class WritingAgent():
             prompt = EMAIL_WRITING_PROMPT.format(topic=topic, n=n)
             messages.append(HumanMessage(content=prompt))
             response = self.llm_email_writer.invoke(messages)
-            return {"messages": response}
+            formatted_response = AIMessage(content="OK", object=response)
+            return {"messages": formatted_response}
 
 
         # Define a new graph
@@ -128,7 +130,11 @@ class WritingAgent():
         doc = Document(result)
         sum = doc.summary(html_partial=True)
 
-        def _cleanhtml(raw_html):
+        def _cleanhtml(raw_html: str) -> str:
+            """
+            Clean HTML from raw HTML string by replacing certain tags with other
+            characters to make it more suitable for LLM analysing.
+            """
             cleantext = re.sub(r"</p>", '\n\n', raw_html)
             cleantext = re.sub(r"<br>", '\n', cleantext)
             cleantext = re.sub(r"<li>", "- ", cleantext)
