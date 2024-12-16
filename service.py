@@ -33,7 +33,7 @@ for url in tqdm(urls.split()):
     essays.append(essay)
 
 # Get topic and number of words
-print("What topic do you want to write about?\n- Input brief description:", end=' ')
+print("What topic do you want to write about?\n- Input content description:", end=' ')
 topic = input()
 print("How many words should this be?\n- Input number only:", end=' ')
 num_words = input()
