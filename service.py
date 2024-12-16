@@ -16,9 +16,12 @@ url = input()
 
 # Extract color scheme
 style_detector = StyleDetector(url)
-detected_style = style_detector.get_color_scheme()
-print("--\nDetected color scheme:")
-pprint(detected_style)
+try:
+    detected_style = style_detector.get_color_scheme()
+    print("--\nDetected color scheme:")
+    pprint(detected_style)
+except:
+    print('Cannot detect color scheme.')
 
 print('\n***\n')
 
@@ -33,17 +36,20 @@ for url in tqdm(urls.split()):
     essays.append(essay)
 
 # Get topic and number of words
-print("What topic do you want to write about?\n- Input content description:", end=' ')
+print("What topic do you want to write about?\n(Example: Get 15%% off today with coupon code BLACKFRIDAY15)\n- Input content description:", end=' ')
 topic = input()
 print("How many words should this be?\n- Input number only:", end=' ')
 num_words = input()
 
 # Generate content
-final_state = writing_agent.run(essays=essays,
-                                topic=topic,
-                                num_words=num_words,
-                                config={"configurable": {"thread_id": 42}})
+try:
+    final_state = writing_agent.run(essays=essays,
+                                    topic=topic,
+                                    num_words=num_words,
+                                    config={"configurable": {"thread_id": 42}})
 
-result = final_state['messages'][-1].object
-print('--\nGenerated email:')
-pprint(result)
+    result = final_state['messages'][-1].object
+    print('--\nGenerated email:')
+    pprint(result)
+except:
+    print('Cannot generate email.')
